@@ -7,6 +7,9 @@ class BadiDate {
   final int day;
 
   /// The month number with Baha = 1, ... Ayyam'i'Ha = 19, and Ala = 20
+  int _monthIntern;
+
+  /// The month number with Ayyam'i'Ha = 0 and Baha = 1, ... Ala = 19
   final int month;
 
   /// The full year of the Badi Calendar with 2020 AC = 177 BE
@@ -18,19 +21,34 @@ class BadiDate {
   /// used in western countries.
   /// parameters:
   /// day int in range [1-19]
-  /// month int in range [1-19]
+  /// month int in range [0-19]
   /// year int
-  BadiDate({@required this.day, @required this.month, @required this.year}) {
+  /// ayyamIHa bool
+  /// For Ayyam'i'Ha set month to 0 or leafe it emty and set ayyamIHa to true
+  BadiDate(
+      {@required this.day,
+      this.month = 0,
+      @required this.year,
+      ayyamIHa = false}) {
     if (day < 1 || day > 19) {
       throw ArgumentError.value(day, 'day', 'Day must be in the range [1-19]');
     }
-    if (month < 1 || month > 20) {
+    if (month < 0 || month > 19) {
       throw ArgumentError.value(
-          month, 'month', 'Month must be in the range [1-20]');
+          month, 'month', 'Month must be in the range [1-19]');
+    }
+    if (month != 0 && ayyamIHa) {
+      throw ArgumentError.value(
+          month, 'month', 'Please set month to 0 or leafe it out for AyyamIHa');
     }
     if (year > 221) {
       throw UnsupportedError('Years greater than 221 are not supported yet');
     }
+    _monthIntern = month == 0
+        ? 19
+        : month == 19
+            ? 20
+            : month;
   }
 
   /// The year in the Vahid. A value in the range from [1-19]
@@ -71,20 +89,20 @@ class BadiDate {
 
   /// the day of the year with Naw Ruz = 1
   int get dayOfYear {
-    if (month == 20) {
+    if (_monthIntern == 20) {
       return 342 + _getNumberAyyamIHaDays(year) + day;
     }
-    return (month - 1) * 19 + day;
+    return (_monthIntern - 1) * 19 + day;
   }
 
   /// Is the date in the period of fast
   bool get isPeriodOfFast {
-    return month == 20;
+    return month == 19;
   }
 
   /// is the date an Ayyam'i'Ha day
   bool get isAyyamIHa {
-    return month == 19;
+    return month == 0;
   }
 
   /// is the date a feast date
@@ -116,11 +134,13 @@ class BadiDate {
     }
     final month = (doy / 19).ceil();
     final day = doy - (month - 1) * 19;
-    if (month < 19 || (month == 19 && day <= _getNumberAyyamIHaDays(year))) {
+    if (month < 19) {
       return BadiDate(day: day, month: month, year: year);
+    } else if (month == 19 && day <= _getNumberAyyamIHaDays(year)) {
+      return BadiDate(day: day, month: 0, year: year);
     }
     final alaDay = doy - 342 - _getNumberAyyamIHaDays(year);
-    return BadiDate(day: alaDay, month: 20, year: year);
+    return BadiDate(day: alaDay, month: 19, year: year);
   }
 
   /// BadiDate from a DateTime object
@@ -161,14 +181,10 @@ class BadiDate {
         ?.type;
   }
 
-  /// The BadiDate of the next feast or the first day of Ayyam'i'Ha
-  /// parameter excludeAyyamIHa: should the first day of Ayyam'i'Ha be left out
-  BadiDate getNextFeast({bool excludeAyyamIHa}) {
-    if (month == 20) {
+  /// The BadiDate of the next feast
+  BadiDate getNextFeast() {
+    if (month == 19) {
       return BadiDate(day: 1, month: 1, year: year + 1);
-    }
-    if (month == 18 && excludeAyyamIHa == true) {
-      return BadiDate(day: 1, month: 20, year: year);
     }
     return BadiDate(day: 1, month: month + 1, year: year);
   }
@@ -187,6 +203,13 @@ class BadiDate {
       return _fromYearAndDayOfYear(year: year + 1, doy: 1);
     }
     return _fromYearAndDayOfYear(year: year, doy: doy);
+  }
+
+  // return the last Ayyam'i'Ha day of that Badi year
+  BadiDate get lastAyyamIHaDayOfYear {
+    final firstAla = BadiDate(day: 1, year: year, month: 19);
+    return BadiDate._fromYearAndDayOfYear(
+        year: year, doy: firstAla.dayOfYear - 1);
   }
 
   // equality

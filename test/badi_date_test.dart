@@ -5,10 +5,12 @@ import 'package:test/test.dart';
 void main() {
   group('throws errors', () {
     test('Throws for invalid day and month', () {
-      expect(() => BadiDate(year: 1, month: 0, day: 1), throwsArgumentError);
-      expect(() => BadiDate(year: 1, month: 21, day: 1), throwsArgumentError);
+      expect(() => BadiDate(year: 1, month: -1, day: 1), throwsArgumentError);
+      expect(() => BadiDate(year: 1, month: 20, day: 1), throwsArgumentError);
       expect(() => BadiDate(year: 1, month: 1, day: 0), throwsArgumentError);
-      expect(() => BadiDate(year: 1, month: 0, day: 20), throwsArgumentError);
+      expect(() => BadiDate(year: 1, month: 1, day: 20), throwsArgumentError);
+      expect(() => BadiDate(year: 1, month: 1, day: 4, ayyamIHa: true),
+          throwsArgumentError);
     });
 
     test('Throws unsupported years', () {
@@ -58,6 +60,13 @@ void main() {
           equals(BadiDate(year: 177, month: 17, day: 1)));
       expect(badiDate.dayOfYear, equals(291));
     });
+
+    test('last AyyamIHa day', () {
+      expect(badiDate.lastAyyamIHaDayOfYear.dateBeforeSunset,
+          equals(DateTime(2021, 2, 28)));
+      expect(badiDate.lastAyyamIHaDayOfYear.dateAfterSunset,
+          equals(DateTime(2021, 2, 27)));
+    });
   });
 
   group('naw ruz', () {
@@ -81,10 +90,8 @@ void main() {
   group('feasts and holy days', () {
     final badiDate = BadiDate(day: 1, month: 19, year: 177);
     test('calculates the feasts', () {
-      expect(badiDate.dateBeforeSunset, equals(DateTime(2021, 2, 25)));
+      expect(badiDate.dateBeforeSunset, equals(DateTime(2021, 3, 1)));
       BadiDate date = badiDate.getNextFeast();
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 3, 1)));
-      date = date.getNextFeast();
       expect(date.dateBeforeSunset, equals(DateTime(2021, 3, 20)));
       date = date.getNextFeast();
       expect(date.dateBeforeSunset, equals(DateTime(2021, 4, 8)));
@@ -120,8 +127,6 @@ void main() {
       expect(date.dateBeforeSunset, equals(DateTime(2022, 1, 18)));
       date = date.getNextFeast();
       expect(date.dateBeforeSunset, equals(DateTime(2022, 2, 6)));
-      date = date.getNextFeast();
-      expect(date.dateBeforeSunset, equals(DateTime(2022, 2, 25)));
       date = date.getNextFeast();
       expect(date.dateBeforeSunset, equals(DateTime(2022, 3, 2)));
       date = date.getNextFeast();
@@ -188,7 +193,7 @@ void main() {
       badiDate = BadiDate.fromDate(date, isAfterSunset: false);
       expect(badiDate.dateAfterSunset, DateTime(2021, 3, 18));
       expect(badiDate.dateBeforeSunset, DateTime(2021, 3, 19));
-      expect(badiDate.month, 20);
+      expect(badiDate.month, 19);
       expect(badiDate.day, 19);
       expect(badiDate.year, 177);
 
