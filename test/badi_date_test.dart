@@ -25,16 +25,16 @@ void main() {
     final badiDate = BadiDate(day: 6, month: 16, year: 177);
     test('year, month, day', () {
       final expected = DateTime(2021, 1, 4);
-      expect(badiDate.dateBeforeSunset.year, equals(expected.year));
-      expect(badiDate.dateBeforeSunset.month, equals(expected.month));
-      expect(badiDate.dateBeforeSunset.day, equals(expected.day));
+      expect(badiDate.startDateTime.year, equals(expected.year));
+      expect(badiDate.startDateTime.month, equals(expected.month));
+      expect(badiDate.endDateTime.day, equals(expected.day));
     });
 
     test('after sunset', () {
       final expected = DateTime(2021, 1, 3);
-      expect(badiDate.dateAfterSunset.year, equals(expected.year));
-      expect(badiDate.dateAfterSunset.month, equals(expected.month));
-      expect(badiDate.dateAfterSunset.day, equals(expected.day));
+      expect(badiDate.startDateTime.year, equals(expected.year));
+      expect(badiDate.startDateTime.month, equals(expected.month));
+      expect(badiDate.startDateTime.day, equals(expected.day));
     });
 
     test('year in Vahid, Vahid, Kull-i-shay', () {
@@ -62,10 +62,10 @@ void main() {
     });
 
     test('last AyyamIHa day', () {
-      expect(badiDate.lastAyyamIHaDayOfYear.dateBeforeSunset,
-          equals(DateTime(2021, 2, 28)));
-      expect(badiDate.lastAyyamIHaDayOfYear.dateAfterSunset,
-          equals(DateTime(2021, 2, 27)));
+      expect(badiDate.lastAyyamIHaDayOfYear.endDateTime,
+          equals(DateTime(2021, 2, 28, 18)));
+      expect(badiDate.lastAyyamIHaDayOfYear.startDateTime,
+          equals(DateTime(2021, 2, 27, 18)));
     });
   });
 
@@ -74,13 +74,13 @@ void main() {
       for (int i = 1; i < 175; i++) {
         final date = BadiDate(day: 1, month: 1, year: i);
         expect(date.holyDay, equals(BahaiHolyDayEnum.NAW_RUZ));
-        expect(date.dateBeforeSunset.month, equals(3));
-        expect(date.dateBeforeSunset.year, equals(i + 1843));
+        expect(date.startDateTime.month, equals(3));
+        expect(date.startDateTime.year, equals(i + 1843));
         if (i < 173) {
-          expect(date.dateBeforeSunset.day, equals(21), reason: 'Year $i');
+          expect(date.endDateTime.day, equals(21), reason: 'Year $i');
           expect(BadiDate.getDayOfNawRuz(i), equals(21), reason: 'Year $i');
         } else {
-          expect(date.dateBeforeSunset.day, equals(20), reason: 'Year $i');
+          expect(date.endDateTime.day, equals(20), reason: 'Year $i');
           expect(BadiDate.getDayOfNawRuz(i), equals(20), reason: 'Year $i');
         }
       }
@@ -90,142 +90,144 @@ void main() {
   group('feasts and holy days', () {
     final badiDate = BadiDate(day: 1, month: 19, year: 177);
     test('calculates the feasts', () {
-      expect(badiDate.dateBeforeSunset, equals(DateTime(2021, 3, 1)));
+      expect(badiDate.endDateTime, equals(DateTime(2021, 3, 1, 18)));
       BadiDate date = badiDate.getNextFeast();
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 3, 20)));
+      expect(date.endDateTime, equals(DateTime(2021, 3, 20, 18)));
       date = date.getNextFeast();
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 4, 8)));
+      expect(date.endDateTime, equals(DateTime(2021, 4, 8, 18)));
       date = date.getNextFeast();
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 4, 27)));
+      expect(date.endDateTime, equals(DateTime(2021, 4, 27, 18)));
       date = date.getNextFeast();
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 5, 16)));
+      expect(date.endDateTime, equals(DateTime(2021, 5, 16, 18)));
       date = date.getNextFeast();
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 6, 4)));
+      expect(date.endDateTime, equals(DateTime(2021, 6, 4, 18)));
       date = date.getNextFeast();
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 6, 23)));
+      expect(date.endDateTime, equals(DateTime(2021, 6, 23, 18)));
       date = date.getNextFeast();
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 7, 12)));
+      expect(date.endDateTime, equals(DateTime(2021, 7, 12, 18)));
       date = date.getNextFeast();
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 7, 31)));
+      expect(date.endDateTime, equals(DateTime(2021, 7, 31, 18)));
       date = date.getNextFeast();
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 8, 19)));
+      expect(date.endDateTime, equals(DateTime(2021, 8, 19, 18)));
       date = date.getNextFeast();
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 9, 7)));
+      expect(date.endDateTime, equals(DateTime(2021, 9, 7, 18)));
       date = date.getNextFeast();
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 9, 26)));
+      expect(date.endDateTime, equals(DateTime(2021, 9, 26, 18)));
       date = date.getNextFeast();
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 10, 15)));
+      expect(date.endDateTime, equals(DateTime(2021, 10, 15, 18)));
       date = date.getNextFeast();
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 11, 3)));
+      expect(date.endDateTime, equals(DateTime(2021, 11, 3, 18)));
       date = date.getNextFeast();
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 11, 22)));
+      expect(date.endDateTime, equals(DateTime(2021, 11, 22, 18)));
       date = date.getNextFeast();
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 12, 11)));
+      expect(date.endDateTime, equals(DateTime(2021, 12, 11, 18)));
       date = date.getNextFeast();
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 12, 30)));
+      expect(date.endDateTime, equals(DateTime(2021, 12, 30, 18)));
       date = date.getNextFeast();
-      expect(date.dateBeforeSunset, equals(DateTime(2022, 1, 18)));
+      expect(date.endDateTime, equals(DateTime(2022, 1, 18, 18)));
       date = date.getNextFeast();
-      expect(date.dateBeforeSunset, equals(DateTime(2022, 2, 6)));
+      expect(date.endDateTime, equals(DateTime(2022, 2, 6, 18)));
       date = date.getNextFeast();
-      expect(date.dateBeforeSunset, equals(DateTime(2022, 3, 2)));
+      expect(date.endDateTime, equals(DateTime(2022, 3, 2, 18)));
       date = date.getNextFeast();
-      expect(date.dateBeforeSunset, equals(DateTime(2022, 3, 21)));
+      expect(date.endDateTime, equals(DateTime(2022, 3, 21, 18)));
     });
 
     test('calculates the holy days', () {
       BadiDate date = badiDate.nextHolyDate;
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 3, 20)));
+      expect(date.endDateTime, equals(DateTime(2021, 3, 20, 18)));
       expect(date.holyDay, equals(BahaiHolyDayEnum.NAW_RUZ));
 
       date = date.nextHolyDate;
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 4, 20)));
+      expect(date.endDateTime, equals(DateTime(2021, 4, 20, 18)));
       expect(date.holyDay, equals(BahaiHolyDayEnum.RIDVAN1ST));
 
       date = date.nextHolyDate;
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 4, 28)));
+      expect(date.endDateTime, equals(DateTime(2021, 4, 28, 18)));
       expect(date.holyDay, equals(BahaiHolyDayEnum.RIDVAN9TH));
 
       date = date.nextHolyDate;
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 5, 1)));
+      expect(date.endDateTime, equals(DateTime(2021, 5, 1, 18)));
       expect(date.holyDay, equals(BahaiHolyDayEnum.RIDVAN12TH));
 
       date = date.nextHolyDate;
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 5, 23)));
+      expect(date.endDateTime, equals(DateTime(2021, 5, 23, 18)));
       expect(date.holyDay, equals(BahaiHolyDayEnum.DECLEARTION_OF_THE_BAB));
 
       date = date.nextHolyDate;
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 5, 28)));
+      expect(date.endDateTime, equals(DateTime(2021, 5, 28, 18)));
       expect(date.holyDay, equals(BahaiHolyDayEnum.ASCENSION_OF_BAHAULLAH));
 
       date = date.nextHolyDate;
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 7, 9)));
+      expect(date.endDateTime, equals(DateTime(2021, 7, 9, 18)));
       expect(date.holyDay, equals(BahaiHolyDayEnum.MARTYRDOM_OF_THE_BAB));
 
       date = date.nextHolyDate;
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 11, 6)));
+      expect(date.endDateTime, equals(DateTime(2021, 11, 6, 18)));
       expect(date.holyDay, equals(BahaiHolyDayEnum.BIRTH_OF_THE_BAB));
 
       date = date.nextHolyDate;
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 11, 7)));
+      expect(date.endDateTime, equals(DateTime(2021, 11, 7, 18)));
       expect(date.holyDay, equals(BahaiHolyDayEnum.BIRTH_OF_BAHAULLAH));
 
       date = date.nextHolyDate;
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 11, 25)));
+      expect(date.endDateTime, equals(DateTime(2021, 11, 25, 18)));
       expect(date.holyDay, equals(BahaiHolyDayEnum.DAY_OF_THE_COVENANT));
 
       date = date.nextHolyDate;
-      expect(date.dateBeforeSunset, equals(DateTime(2021, 11, 27)));
+      expect(date.endDateTime, equals(DateTime(2021, 11, 27, 18)));
       expect(date.holyDay, equals(BahaiHolyDayEnum.ASCENSION_OF_ABDUL_BAHA));
     });
   });
 
   group('corner cases', () {
     test('round trip naw ruz', () {
-      var date = DateTime(2021, 3, 19);
-      var badiDate = BadiDate.fromDate(date, isAfterSunset: true);
-      expect(badiDate.dateAfterSunset, DateTime(2021, 3, 19));
-      expect(badiDate.dateBeforeSunset, DateTime(2021, 3, 20));
+      var date = DateTime(2021, 3, 19, 20);
+      var badiDate = BadiDate.fromDate(date);
+      expect(badiDate.startDateTime, DateTime(2021, 3, 19, 18));
+      expect(badiDate.endDateTime, DateTime(2021, 3, 20, 18));
       expect(badiDate.month, 1);
       expect(badiDate.day, 1);
       expect(badiDate.year, 178);
 
-      badiDate = BadiDate.fromDate(date, isAfterSunset: false);
-      expect(badiDate.dateAfterSunset, DateTime(2021, 3, 18));
-      expect(badiDate.dateBeforeSunset, DateTime(2021, 3, 19));
+      date = DateTime(2021, 3, 19, 16);
+      badiDate = BadiDate.fromDate(date);
+      expect(badiDate.startDateTime, DateTime(2021, 3, 18, 18));
+      expect(badiDate.endDateTime, DateTime(2021, 3, 19, 18));
       expect(badiDate.month, 19);
       expect(badiDate.day, 19);
       expect(badiDate.year, 177);
 
-      date = DateTime(2021, 3, 20);
-      badiDate = BadiDate.fromDate(date, isAfterSunset: false);
-      expect(badiDate.dateAfterSunset, DateTime(2021, 3, 19));
-      expect(badiDate.dateBeforeSunset, DateTime(2021, 3, 20));
+      date = DateTime(2021, 3, 20, 16);
+      badiDate = BadiDate.fromDate(date);
+      expect(badiDate.startDateTime, DateTime(2021, 3, 19, 18));
+      expect(badiDate.endDateTime, DateTime(2021, 3, 20, 18));
       expect(badiDate.month, 1);
       expect(badiDate.day, 1);
       expect(badiDate.year, 178);
     });
 
     test('new years eve', () {
-      var date = DateTime(2020, 12, 31);
-      var badiDate = BadiDate.fromDate(date, isAfterSunset: false);
-      expect(badiDate.dateAfterSunset, DateTime(2020, 12, 30));
-      expect(badiDate.dateBeforeSunset, DateTime(2020, 12, 31));
+      var date = DateTime(2020, 12, 31, 16);
+      var badiDate = BadiDate.fromDate(date);
+      expect(badiDate.startDateTime, DateTime(2020, 12, 30, 18));
+      expect(badiDate.endDateTime, DateTime(2020, 12, 31, 18));
       expect(badiDate.day, 2);
       expect(badiDate.month, 16);
       expect(badiDate.year, 177);
 
-      badiDate = BadiDate.fromDate(date, isAfterSunset: true);
-      expect(badiDate.dateAfterSunset, DateTime(2020, 12, 31));
-      expect(badiDate.dateBeforeSunset, DateTime(2021, 1, 1));
+      date = DateTime(2020, 12, 31, 20);
+      badiDate = BadiDate.fromDate(date);
+      expect(badiDate.startDateTime, DateTime(2020, 12, 31, 18));
+      expect(badiDate.endDateTime, DateTime(2021, 1, 1, 18));
       expect(badiDate.day, 3);
       expect(badiDate.month, 16);
       expect(badiDate.year, 177);
 
-      date = DateTime(2021, 1, 1);
-      badiDate = BadiDate.fromDate(date, isAfterSunset: false);
-      expect(badiDate.dateAfterSunset, DateTime(2020, 12, 31));
-      expect(badiDate.dateBeforeSunset, DateTime(2021, 1, 1));
+      date = DateTime(2021, 1, 1, 16);
+      badiDate = BadiDate.fromDate(date);
+      expect(badiDate.startDateTime, DateTime(2020, 12, 31, 18));
+      expect(badiDate.endDateTime, DateTime(2021, 1, 1, 18));
       expect(badiDate.day, 3);
       expect(badiDate.month, 16);
       expect(badiDate.year, 177);
@@ -255,6 +257,71 @@ void main() {
       expect(badiDate.isAyyamIHa, false);
       expect(badiDate.isPeriodOfFast, true);
       expect(badiDate.day, 1);
+    });
+  });
+
+  group("sunset calculation", () {
+    test("handles pols and nonsense values", () {
+      final expected = DateTime(2021, 1, 17, 18);
+      expect(BadiDate(day: 1, month: 17, year: 177).startDateTime,
+          equals(expected));
+      expect(
+          BadiDate(day: 1, month: 17, year: 177, latitude: 53.6).startDateTime,
+          equals(expected));
+      expect(
+          BadiDate(day: 1, month: 17, year: 177, longitude: 10.0).startDateTime,
+          equals(expected));
+      expect(
+          BadiDate(
+                  day: 1,
+                  month: 17,
+                  year: 177,
+                  longitude: 190.0,
+                  latitude: 53.6)
+              .startDateTime,
+          equals(expected));
+      expect(
+          BadiDate(
+                  day: 1,
+                  month: 17,
+                  year: 177,
+                  longitude: -190.0,
+                  latitude: 53.6)
+              .startDateTime,
+          equals(expected));
+      expect(
+          BadiDate(
+                  day: 1, month: 17, year: 177, longitude: 10.0, latitude: 66.6)
+              .startDateTime,
+          equals(expected));
+      expect(
+          BadiDate(
+                  day: 1,
+                  month: 17,
+                  year: 177,
+                  longitude: 10.0,
+                  latitude: -66.6)
+              .startDateTime,
+          equals(expected));
+    });
+
+    // This test only works if your local time is CET or CEST
+    test("calculates sunset", () {
+      final expected = DateTime(2021, 1, 17, 16, 34);
+      expect(
+          BadiDate(
+                  day: 1, month: 17, year: 177, longitude: 10.0, latitude: 53.6)
+              .startDateTime,
+          equals(expected));
+    });
+
+    // This test only works if your local time is CET or CEST
+    test("handles daylight saving", () {
+      final expected = DateTime(2021, 6, 23, 21, 55);
+      expect(
+          BadiDate(day: 1, month: 6, year: 178, longitude: 10.0, latitude: 53.6)
+              .endDateTime,
+          equals(expected));
     });
   });
 }

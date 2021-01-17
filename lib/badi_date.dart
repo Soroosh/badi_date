@@ -1,6 +1,7 @@
 import 'package:badi_date/bahai_holyday.dart';
 import 'package:badi_date/years.dart';
 import 'package:meta/meta.dart';
+import 'package:badi_date/suncalc/suncalc.dart';
 
 /// A Badi Date
 class BadiDate {
@@ -15,21 +16,30 @@ class BadiDate {
   /// The full year of the Badi Calendar with 2020 AC = 177 BE
   final int year;
 
+  /// longitude value of degree coordinates for sunset calculation in the range [-180,180]
+  final double longitude;
+
+  /// latitude value of degree coordinates for sunset calculation in the range [-90,90]
+  final double latitude;
+
   /// Badi date
-  /// for now only for the years  up to 221
+  /// for now only for the years up to 221
   /// Dates before the year 172 are calculated according to the Baha'i Kalendar
   /// used in western countries.
   /// parameters:
   /// day int in range [1-19]
   /// month int in range [0-19]
   /// year int
+  /// longitude and latitude double for sunset calculation
   /// ayyamIHa bool
   /// For Ayyam'i'Ha set month to 0 or leafe it emty and set ayyamIHa to true
   BadiDate(
       {@required this.day,
       this.month = 0,
       @required this.year,
-      ayyamIHa = false}) {
+      ayyamIHa = false,
+      this.latitude,
+      this.longitude}) {
     if (day < 1 || day > 19) {
       throw ArgumentError.value(day, 'day', 'Day must be in the range [1-19]');
     }
@@ -110,24 +120,52 @@ class BadiDate {
     return day == 1 && !isAyyamIHa;
   }
 
-  /// Date after sunset
-  /// (time in the DateTime is not set)
-  DateTime get dateAfterSunset {
-    final nawruz = DateTime.utc(year + 1843, 3, getDayOfNawRuz(year));
-    final date = nawruz.add(Duration(days: dayOfYear - 2));
-    return DateTime(date.year, date.month, date.day);
+  static DateTime _calculateSunSet(DateTime date,
+      {double longitude, double latitude}) {
+    final fallback = DateTime(date.year, date.month, date.day, 18);
+    // return 6pm if no location or if in the poles
+    if (latitude == null ||
+        longitude == null ||
+        latitude > 66.0 ||
+        latitude < -66.0 ||
+        longitude.abs() > 180.0) {
+      return fallback;
+    }
+    final sunCalcTimes = SunCalc.getTimes(date, latitude, longitude);
+    return sunCalcTimes["sunset"] ?? fallback;
   }
 
-  /// Date before sunset
-  /// (time in the DateTime is not set)
-  DateTime get dateBeforeSunset {
+  static DateTime _utcToLocale(DateTime date) {
+    if (!date.isUtc) {
+      return date;
+    }
+    final localeDate = DateTime(date.year, date.month, date.day);
+    return localeDate
+        .add(Duration(hours: date.hour, minutes: date.minute))
+        .add(localeDate.timeZoneOffset);
+  }
+
+  /// Start DateTime
+  DateTime get startDateTime {
+    final nawruz = DateTime.utc(year + 1843, 3, getDayOfNawRuz(year));
+    final date = nawruz.add(Duration(days: dayOfYear - 2));
+    return _utcToLocale(
+        _calculateSunSet(date, longitude: longitude, latitude: latitude));
+  }
+
+  /// End DateTime
+  DateTime get endDateTime {
     final nawruz = DateTime.utc(year + 1843, 3, getDayOfNawRuz(year));
     final date = nawruz.add(Duration(days: dayOfYear - 1));
-    return DateTime(date.year, date.month, date.day);
+    return _utcToLocale(
+        _calculateSunSet(date, longitude: longitude, latitude: latitude));
   }
 
   static BadiDate _fromYearAndDayOfYear(
-      {@required int year, @required int doy}) {
+      {@required int year,
+      @required int doy,
+      double longitude,
+      double latitude}) {
     if (doy < 1 || doy > 366) {
       throw ArgumentError.value(
           doy, 'doy', 'Day of year must be in the range [1-366]');
@@ -135,25 +173,42 @@ class BadiDate {
     final month = (doy / 19).ceil();
     final day = doy - (month - 1) * 19;
     if (month < 19) {
-      return BadiDate(day: day, month: month, year: year);
+      return BadiDate(
+          day: day,
+          month: month,
+          year: year,
+          longitude: longitude,
+          latitude: latitude);
     } else if (month == 19 && day <= _getNumberAyyamIHaDays(year)) {
-      return BadiDate(day: day, month: 0, year: year);
+      return BadiDate(
+          day: day,
+          month: 0,
+          year: year,
+          longitude: longitude,
+          latitude: latitude);
     }
     final alaDay = doy - 342 - _getNumberAyyamIHaDays(year);
-    return BadiDate(day: alaDay, month: 19, year: year);
+    return BadiDate(
+        day: alaDay,
+        month: 19,
+        year: year,
+        longitude: longitude,
+        latitude: latitude);
   }
 
   /// BadiDate from a DateTime object
-  /// (time in the DateTime is not set)
-  /// Parameter bool isAfterSunset
+  /// Optional parameter double longitude, latitude for the sunset time
   static BadiDate fromDate(DateTime gregorianDate,
-      {bool isAfterSunset = false}) {
+      {double longitude, double latitude}) {
     // we convert to utc to avoid daylight saving issues
     final dateTime = DateTime.utc(
         gregorianDate.year, gregorianDate.month, gregorianDate.day);
     if (dateTime.isAfter(DateTime.utc(2065, 3, 19))) {
       throw UnsupportedError('Dates after 2064-03-19 are not supported yet.');
     }
+    final isAfterSunset = gregorianDate.isAfter(_calculateSunSet(gregorianDate,
+        longitude: longitude, latitude: latitude));
+    ;
     final date = isAfterSunset ? dateTime.add(Duration(days: 1)) : dateTime;
     final badiYear = date.year - 1843;
     final isBeforeNawRuz =
@@ -162,11 +217,19 @@ class BadiDate {
       final doy =
           date.difference(DateTime.utc(date.year, 3, getDayOfNawRuz(badiYear)));
       // +1 because naw ruz has a doy of 1 but a difference of 0
-      return _fromYearAndDayOfYear(year: badiYear, doy: doy.inDays + 1);
+      return _fromYearAndDayOfYear(
+          year: badiYear,
+          doy: doy.inDays + 1,
+          longitude: longitude,
+          latitude: latitude);
     }
     final doy = date.difference(
         DateTime.utc(date.year - 1, 3, getDayOfNawRuz(badiYear - 1)));
-    return _fromYearAndDayOfYear(year: badiYear - 1, doy: doy.inDays + 1);
+    return _fromYearAndDayOfYear(
+        year: badiYear - 1,
+        doy: doy.inDays + 1,
+        longitude: longitude,
+        latitude: latitude);
   }
 
   /// If the BadiDate is a Baha'i Holy day the Holy date else null
@@ -184,9 +247,19 @@ class BadiDate {
   /// The BadiDate of the next feast
   BadiDate getNextFeast() {
     if (month == 19) {
-      return BadiDate(day: 1, month: 1, year: year + 1);
+      return BadiDate(
+          day: 1,
+          month: 1,
+          year: year + 1,
+          longitude: longitude,
+          latitude: latitude);
     }
-    return BadiDate(day: 1, month: month + 1, year: year);
+    return BadiDate(
+        day: 1,
+        month: month + 1,
+        year: year,
+        longitude: longitude,
+        latitude: latitude);
   }
 
   /// The BadiDate of the next Holy day
@@ -200,16 +273,26 @@ class BadiDate {
             orElse: () => null)
         ?.getDayOfTheYear(dayOfYearBirthOfBab: birthOfBab);
     if (doy == null) {
-      return _fromYearAndDayOfYear(year: year + 1, doy: 1);
+      return _fromYearAndDayOfYear(
+          year: year + 1, doy: 1, longitude: longitude, latitude: latitude);
     }
-    return _fromYearAndDayOfYear(year: year, doy: doy);
+    return _fromYearAndDayOfYear(
+        year: year, doy: doy, longitude: longitude, latitude: latitude);
   }
 
   // return the last Ayyam'i'Ha day of that Badi year
   BadiDate get lastAyyamIHaDayOfYear {
-    final firstAla = BadiDate(day: 1, year: year, month: 19);
+    final firstAla = BadiDate(
+        day: 1,
+        year: year,
+        month: 19,
+        longitude: longitude,
+        latitude: latitude);
     return BadiDate._fromYearAndDayOfYear(
-        year: year, doy: firstAla.dayOfYear - 1);
+        year: year,
+        doy: firstAla.dayOfYear - 1,
+        longitude: longitude,
+        latitude: latitude);
   }
 
   // equality
