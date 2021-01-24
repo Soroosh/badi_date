@@ -78,6 +78,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.5"
+  dart_suncalc:
+    dependency: "direct main"
+    description:
+      path: "../dart_suncalc"
+      relative: true
+    source: path
+    version: "0.1.0"
   file:
     dependency: transitive
     description:

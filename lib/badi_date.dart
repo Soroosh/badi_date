@@ -1,7 +1,7 @@
 import 'package:badi_date/bahai_holyday.dart';
 import 'package:badi_date/years.dart';
 import 'package:meta/meta.dart';
-import 'package:badi_date/suncalc/suncalc.dart';
+import 'package:dart_suncalc/suncalc.dart';
 
 /// A Badi Date
 class BadiDate {
@@ -131,7 +131,7 @@ class BadiDate {
         longitude.abs() > 180.0) {
       return fallback;
     }
-    final sunCalcTimes = SunCalc.getTimes(date, latitude, longitude);
+    final sunCalcTimes = SunCalc.getTimes(date, lat: latitude, lng: longitude);
     return sunCalcTimes["sunset"] ?? fallback;
   }
 

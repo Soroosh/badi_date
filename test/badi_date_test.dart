@@ -323,5 +323,13 @@ void main() {
               .endDateTime,
           equals(expected));
     });
+
+    test("handles sunset on next gregorian day", () {
+      final expected = DateTime(2021, 6, 24, 0, 18);
+      expect(
+          BadiDate(day: 1, month: 6, year: 178, longitude: 8.0, latitude: 64.6)
+              .endDateTime,
+          equals(expected));
+    });
   });
 }
