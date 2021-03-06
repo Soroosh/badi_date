@@ -1,14 +1,15 @@
 import 'package:badi_date/bahai_holyday.dart';
 import 'package:badi_date/years.dart';
-import 'package:meta/meta.dart';
 import 'package:dart_suncalc/suncalc.dart';
 
 /// A Badi Date
 class BadiDate {
+  static const LAST_YEAR_SUPPORTED = 221;
+  static const YEAR_ONE_IN_GREGORIAN = 1844;
   final int day;
 
   /// The month number with Baha = 1, ... Ayyam'i'Ha = 19, and Ala = 20
-  int _monthIntern;
+  int _monthIntern = -1;
 
   /// The month number with Ayyam'i'Ha = 0 and Baha = 1, ... Ala = 19
   final int month;
@@ -17,13 +18,13 @@ class BadiDate {
   final int year;
 
   /// longitude value of degree coordinates for sunset calculation in the range [-180,180]
-  final double longitude;
+  final double? longitude;
 
   /// latitude value of degree coordinates for sunset calculation in the range [-90,90]
-  final double latitude;
+  final double? latitude;
 
   /// Badi date
-  /// for now only for the years up to 221
+  /// for now only for the years up to LAST_YEAR_SUPPORTED
   /// Dates before the year 172 are calculated according to the Baha'i Kalendar
   /// used in western countries.
   /// parameters:
@@ -34,9 +35,9 @@ class BadiDate {
   /// ayyamIHa bool
   /// For Ayyam'i'Ha set month to 0 or leafe it emty and set ayyamIHa to true
   BadiDate(
-      {@required this.day,
+      {required this.day,
       this.month = 0,
-      @required this.year,
+      required this.year,
       ayyamIHa = false,
       this.latitude,
       this.longitude}) {
@@ -51,8 +52,9 @@ class BadiDate {
       throw ArgumentError.value(
           month, 'month', 'Please set month to 0 or leafe it out for AyyamIHa');
     }
-    if (year > 221) {
-      throw UnsupportedError('Years greater than 221 are not supported yet');
+    if (year > LAST_YEAR_SUPPORTED) {
+      throw UnsupportedError(
+          'Years greater than $LAST_YEAR_SUPPORTED are not supported yet');
     }
     _monthIntern = month == 0
         ? 19
@@ -121,7 +123,7 @@ class BadiDate {
   }
 
   static DateTime _calculateSunSet(DateTime date,
-      {double longitude, double latitude}) {
+      {double? longitude, double? latitude}) {
     final fallback = DateTime(date.year, date.month, date.day, 18);
     // return 6pm if no location or if in the poles
     if (latitude == null ||
@@ -132,7 +134,7 @@ class BadiDate {
       return fallback;
     }
     final sunCalcTimes = SunCalc.getTimes(date, lat: latitude, lng: longitude);
-    return sunCalcTimes["sunset"] ?? fallback;
+    return sunCalcTimes.sunset ?? fallback;
   }
 
   static DateTime _utcToLocale(DateTime date) {
@@ -162,10 +164,10 @@ class BadiDate {
   }
 
   static BadiDate _fromYearAndDayOfYear(
-      {@required int year,
-      @required int doy,
-      double longitude,
-      double latitude}) {
+      {required int year,
+      required int doy,
+      double? longitude,
+      double? latitude}) {
     if (doy < 1 || doy > 366) {
       throw ArgumentError.value(
           doy, 'doy', 'Day of year must be in the range [1-366]');
@@ -199,7 +201,7 @@ class BadiDate {
   /// BadiDate from a DateTime object
   /// Optional parameter double longitude, latitude for the sunset time
   static BadiDate fromDate(DateTime gregorianDate,
-      {double longitude, double latitude}) {
+      {double? longitude, double? latitude}) {
     // we convert to utc to avoid daylight saving issues
     final dateTime = DateTime.utc(
         gregorianDate.year, gregorianDate.month, gregorianDate.day);
@@ -233,12 +235,12 @@ class BadiDate {
   }
 
   /// If the BadiDate is a Baha'i Holy day the Holy date else null
-  BahaiHolyDayEnum get holyDay {
+  BahaiHolyDayEnum? get holyDay {
     final birthOfBab = yearSpecifics[year]?.birthOfBab;
     return bahaiHolyDays
         .firstWhere(
             (holyDay) =>
-                holyDay.getDayOfTheYear(dayOfYearBirthOfBab: birthOfBab) ==
+                holyDay?.getDayOfTheYear(dayOfYearBirthOfBab: birthOfBab) ==
                 dayOfYear,
             orElse: () => null)
         ?.type;
@@ -268,7 +270,8 @@ class BadiDate {
     final doy = bahaiHolyDays
         .firstWhere(
             (holyDay) =>
-                holyDay.getDayOfTheYear(dayOfYearBirthOfBab: birthOfBab) >
+                (holyDay?.getDayOfTheYear(dayOfYearBirthOfBab: birthOfBab) ??
+                    0) >
                 dayOfYear,
             orElse: () => null)
         ?.getDayOfTheYear(dayOfYearBirthOfBab: birthOfBab);

@@ -152,7 +152,7 @@ void main() {
 
       date = date.nextHolyDate;
       expect(date.endDateTime, equals(DateTime(2021, 5, 23, 18)));
-      expect(date.holyDay, equals(BahaiHolyDayEnum.DECLEARTION_OF_THE_BAB));
+      expect(date.holyDay, equals(BahaiHolyDayEnum.DECLARATION_OF_THE_BAB));
 
       date = date.nextHolyDate;
       expect(date.endDateTime, equals(DateTime(2021, 5, 28, 18)));

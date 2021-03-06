@@ -1,5 +1,3 @@
-import 'package:meta/meta.dart';
-
 class YearSpecifics {
   final int year;
   final bool leapday;
@@ -7,8 +5,8 @@ class YearSpecifics {
   final int birthOfBab;
 
   const YearSpecifics(
-      {@required this.year,
-      @required this.birthOfBab,
+      {required this.year,
+      required this.birthOfBab,
       this.leapday = false,
       this.nawRuzOnMarch21 = false});
 }

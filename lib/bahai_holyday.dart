@@ -11,8 +11,8 @@ enum BahaiHolyDayEnum {
   /// 12th day of Ridvan
   RIDVAN12TH,
 
-  /// Decleration of the Bab
-  DECLEARTION_OF_THE_BAB,
+  /// Declaration of the Bab
+  DECLARATION_OF_THE_BAB,
 
   /// Ascension of Baha'u'llah
   ASCENSION_OF_BAHAULLAH,
@@ -39,7 +39,7 @@ class BahaiHolyDay {
 
   const BahaiHolyDay(this._dayOfYear, this.type);
 
-  int getDayOfTheYear({int dayOfYearBirthOfBab}) {
+  int getDayOfTheYear({int? dayOfYearBirthOfBab}) {
     if (type == BahaiHolyDayEnum.BIRTH_OF_THE_BAB) {
       return dayOfYearBirthOfBab ?? _dayOfYear;
     } else if (type == BahaiHolyDayEnum.BIRTH_OF_BAHAULLAH &&
@@ -50,7 +50,7 @@ class BahaiHolyDay {
   }
 }
 
-const List<BahaiHolyDay> bahaiHolyDays = [
+const List<BahaiHolyDay?> bahaiHolyDays = [
   /// Naw-Ruz
   BahaiHolyDay(1, BahaiHolyDayEnum.NAW_RUZ),
 
@@ -64,7 +64,7 @@ const List<BahaiHolyDay> bahaiHolyDays = [
   BahaiHolyDay(43, BahaiHolyDayEnum.RIDVAN12TH),
 
   /// Decleration of the Bab
-  BahaiHolyDay(65, BahaiHolyDayEnum.DECLEARTION_OF_THE_BAB),
+  BahaiHolyDay(65, BahaiHolyDayEnum.DECLARATION_OF_THE_BAB),
 
   /// Ascension of Baha'u'llah
   BahaiHolyDay(70, BahaiHolyDayEnum.ASCENSION_OF_BAHAULLAH),
