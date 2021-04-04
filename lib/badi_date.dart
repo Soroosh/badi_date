@@ -23,6 +23,9 @@ class BadiDate {
   /// latitude value of degree coordinates for sunset calculation in the range [-90,90]
   final double? latitude;
 
+  /// altitude in meters
+  final double? altitude;
+
   /// Badi date
   /// for now only for the years up to LAST_YEAR_SUPPORTED
   /// Dates before the year 172 are calculated according to the Baha'i Kalendar
@@ -40,7 +43,8 @@ class BadiDate {
       required this.year,
       ayyamIHa = false,
       this.latitude,
-      this.longitude}) {
+      this.longitude,
+      this.altitude}) {
     if (day < 1 || day > 19) {
       throw ArgumentError.value(day, 'day', 'Day must be in the range [1-19]');
     }
@@ -123,7 +127,7 @@ class BadiDate {
   }
 
   static DateTime _calculateSunSet(DateTime date,
-      {double? longitude, double? latitude}) {
+      {double? longitude, double? latitude, double? altitude}) {
     final fallback = DateTime(date.year, date.month, date.day, 18);
     // return 6pm if no location or if in the poles
     if (latitude == null ||
@@ -133,7 +137,8 @@ class BadiDate {
         longitude.abs() > 180.0) {
       return fallback;
     }
-    final sunCalcTimes = SunCalc.getTimes(date, lat: latitude, lng: longitude);
+    final sunCalcTimes = SunCalc.getTimes(date,
+        lat: latitude, lng: longitude, height: altitude ?? 0.0);
     return sunCalcTimes.sunset ?? fallback;
   }
 
@@ -151,23 +156,24 @@ class BadiDate {
   DateTime get startDateTime {
     final nawruz = DateTime.utc(year + 1843, 3, getDayOfNawRuz(year));
     final date = nawruz.add(Duration(days: dayOfYear - 2));
-    return _utcToLocale(
-        _calculateSunSet(date, longitude: longitude, latitude: latitude));
+    return _utcToLocale(_calculateSunSet(date,
+        longitude: longitude, latitude: latitude, altitude: altitude));
   }
 
   /// End DateTime
   DateTime get endDateTime {
     final nawruz = DateTime.utc(year + 1843, 3, getDayOfNawRuz(year));
     final date = nawruz.add(Duration(days: dayOfYear - 1));
-    return _utcToLocale(
-        _calculateSunSet(date, longitude: longitude, latitude: latitude));
+    return _utcToLocale(_calculateSunSet(date,
+        longitude: longitude, latitude: latitude, altitude: altitude));
   }
 
   static BadiDate _fromYearAndDayOfYear(
       {required int year,
       required int doy,
       double? longitude,
-      double? latitude}) {
+      double? latitude,
+      double? altitude}) {
     if (doy < 1 || doy > 366) {
       throw ArgumentError.value(
           doy, 'doy', 'Day of year must be in the range [1-366]');
@@ -180,14 +186,16 @@ class BadiDate {
           month: month,
           year: year,
           longitude: longitude,
-          latitude: latitude);
+          latitude: latitude,
+          altitude: altitude);
     } else if (month == 19 && day <= _getNumberAyyamIHaDays(year)) {
       return BadiDate(
           day: day,
           month: 0,
           year: year,
           longitude: longitude,
-          latitude: latitude);
+          latitude: latitude,
+          altitude: altitude);
     }
     final alaDay = doy - 342 - _getNumberAyyamIHaDays(year);
     return BadiDate(
@@ -195,13 +203,14 @@ class BadiDate {
         month: 19,
         year: year,
         longitude: longitude,
-        latitude: latitude);
+        latitude: latitude,
+        altitude: altitude);
   }
 
   /// BadiDate from a DateTime object
-  /// Optional parameter double longitude, latitude for the sunset time
+  /// Optional parameter double longitude, latitude, altitude for the sunset time
   static BadiDate fromDate(DateTime gregorianDate,
-      {double? longitude, double? latitude}) {
+      {double? longitude, double? latitude, double? altitude}) {
     // we convert to utc to avoid daylight saving issues
     final dateTime = DateTime.utc(
         gregorianDate.year, gregorianDate.month, gregorianDate.day);
@@ -209,7 +218,7 @@ class BadiDate {
       throw UnsupportedError('Dates after 2064-03-19 are not supported yet.');
     }
     final isAfterSunset = gregorianDate.isAfter(_calculateSunSet(gregorianDate,
-        longitude: longitude, latitude: latitude));
+        longitude: longitude, latitude: latitude, altitude: altitude));
     ;
     final date = isAfterSunset ? dateTime.add(Duration(days: 1)) : dateTime;
     final badiYear = date.year - 1843;
@@ -223,7 +232,8 @@ class BadiDate {
           year: badiYear,
           doy: doy.inDays + 1,
           longitude: longitude,
-          latitude: latitude);
+          latitude: latitude,
+          altitude: altitude);
     }
     final doy = date.difference(
         DateTime.utc(date.year - 1, 3, getDayOfNawRuz(badiYear - 1)));
@@ -231,7 +241,8 @@ class BadiDate {
         year: badiYear - 1,
         doy: doy.inDays + 1,
         longitude: longitude,
-        latitude: latitude);
+        latitude: latitude,
+        altitude: altitude);
   }
 
   /// If the BadiDate is a Baha'i Holy day the Holy date else null
@@ -254,14 +265,16 @@ class BadiDate {
           month: 1,
           year: year + 1,
           longitude: longitude,
-          latitude: latitude);
+          latitude: latitude,
+          altitude: altitude);
     }
     return BadiDate(
         day: 1,
         month: month + 1,
         year: year,
         longitude: longitude,
-        latitude: latitude);
+        latitude: latitude,
+        altitude: altitude);
   }
 
   /// The BadiDate of the next Holy day
@@ -277,10 +290,18 @@ class BadiDate {
         ?.getDayOfTheYear(dayOfYearBirthOfBab: birthOfBab);
     if (doy == null) {
       return _fromYearAndDayOfYear(
-          year: year + 1, doy: 1, longitude: longitude, latitude: latitude);
+          year: year + 1,
+          doy: 1,
+          longitude: longitude,
+          latitude: latitude,
+          altitude: altitude);
     }
     return _fromYearAndDayOfYear(
-        year: year, doy: doy, longitude: longitude, latitude: latitude);
+        year: year,
+        doy: doy,
+        longitude: longitude,
+        latitude: latitude,
+        altitude: altitude);
   }
 
   // return the last Ayyam'i'Ha day of that Badi year
@@ -290,12 +311,14 @@ class BadiDate {
         year: year,
         month: 19,
         longitude: longitude,
-        latitude: latitude);
+        latitude: latitude,
+        altitude: altitude);
     return BadiDate._fromYearAndDayOfYear(
         year: year,
         doy: firstAla.dayOfYear - 1,
         longitude: longitude,
-        latitude: latitude);
+        latitude: latitude,
+        altitude: altitude);
   }
 
   // equality
