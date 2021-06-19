@@ -41,7 +41,7 @@ class BadiDate {
       {required this.day,
       this.month = 0,
       required this.year,
-      ayyamIHa = false,
+      bool ayyamIHa = false,
       this.latitude,
       this.longitude,
       this.altitude}) {
@@ -219,7 +219,6 @@ class BadiDate {
     }
     final isAfterSunset = gregorianDate.isAfter(_calculateSunSet(gregorianDate,
         longitude: longitude, latitude: latitude, altitude: altitude));
-    ;
     final date = isAfterSunset ? dateTime.add(Duration(days: 1)) : dateTime;
     final badiYear = date.year - 1843;
     final isBeforeNawRuz =
@@ -323,8 +322,8 @@ class BadiDate {
 
   // equality
   @override
-  bool operator ==(o) =>
-      o is BadiDate && o.year == year && o.dayOfYear == dayOfYear;
+  bool operator ==(other) =>
+      other is BadiDate && other.year == year && other.dayOfYear == dayOfYear;
 
   // hash code
   @override
