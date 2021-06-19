@@ -307,28 +307,31 @@ void main() {
 
     // This test only works if your local time is CET or CEST
     test("calculates sunset", () {
-      final expected = DateTime(2021, 1, 17, 16, 34);
+      final expected = DateTime.utc(2021, 1, 17, 15, 34);
       expect(
           BadiDate(
                   day: 1, month: 17, year: 177, longitude: 10.0, latitude: 53.6)
-              .startDateTime,
+              .startDateTime
+              .toUtc(),
           equals(expected));
     });
 
     // This test only works if your local time is CET or CEST
     test("handles daylight saving", () {
-      final expected = DateTime(2021, 6, 23, 21, 55);
+      final expected = DateTime.utc(2021, 6, 23, 19, 55);
       expect(
           BadiDate(day: 1, month: 6, year: 178, longitude: 10.0, latitude: 53.6)
-              .endDateTime,
+              .endDateTime
+              .toUtc(),
           equals(expected));
     });
 
     test("handles sunset on next gregorian day", () {
-      final expected = DateTime(2021, 6, 24, 0, 18);
+      final expected = DateTime.utc(2021, 6, 23, 22, 18);
       expect(
           BadiDate(day: 1, month: 6, year: 178, longitude: 8.0, latitude: 64.6)
-              .endDateTime,
+              .endDateTime
+              .toUtc(),
           equals(expected));
     });
   });
