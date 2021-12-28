@@ -6,6 +6,7 @@ import 'package:dart_suncalc/suncalc.dart';
 class BadiDate {
   static const LAST_YEAR_SUPPORTED = 221;
   static const YEAR_ONE_IN_GREGORIAN = 1844;
+  static const YEAR_ZERO_IN_GREGORIAN = YEAR_ONE_IN_GREGORIAN - 1;
   final int day;
 
   /// The month number with Baha = 1, ... Ayyam'i'Ha = 19, and Ala = 20
@@ -28,7 +29,7 @@ class BadiDate {
 
   /// Badi date
   /// for now only for the years up to LAST_YEAR_SUPPORTED
-  /// Dates before the year 172 are calculated according to the Baha'i Kalendar
+  /// Dates before the year 172 are calculated according to the Baha'i Calendar
   /// used in western countries.
   /// parameters:
   /// day int in range [1-19]
@@ -36,7 +37,7 @@ class BadiDate {
   /// year int
   /// longitude and latitude double for sunset calculation
   /// ayyamIHa bool
-  /// For Ayyam'i'Ha set month to 0 or leafe it emty and set ayyamIHa to true
+  /// For Ayyam'i'Ha set month to 0 or leave it empty and set ayyamIHa to true
   BadiDate(
       {required this.day,
       this.month = 0,
@@ -54,7 +55,7 @@ class BadiDate {
     }
     if (month != 0 && ayyamIHa) {
       throw ArgumentError.value(
-          month, 'month', 'Please set month to 0 or leafe it out for AyyamIHa');
+          month, 'month', 'Please set month to 0 or leave it out for AyyamIHa');
     }
     if (year > LAST_YEAR_SUPPORTED) {
       throw UnsupportedError(
@@ -87,7 +88,7 @@ class BadiDate {
   static int _getNumberAyyamIHaDays(int year) {
     final yearSpecific = yearSpecifics[year];
     if (yearSpecific == null) {
-      final gregYear = year + 1844;
+      final gregYear = year + YEAR_ONE_IN_GREGORIAN;
       final isleapyear =
           gregYear % 4 == 0 && gregYear % 100 != 0 || gregYear % 400 == 0;
       return isleapyear ? 5 : 4;
@@ -152,18 +153,19 @@ class BadiDate {
         .add(localeDate.timeZoneOffset);
   }
 
+  DateTime get nawRuzDate =>
+      DateTime.utc(year + YEAR_ZERO_IN_GREGORIAN, 3, getDayOfNawRuz(year));
+
   /// Start DateTime
   DateTime get startDateTime {
-    final nawruz = DateTime.utc(year + 1843, 3, getDayOfNawRuz(year));
-    final date = nawruz.add(Duration(days: dayOfYear - 2));
+    final date = nawRuzDate.add(Duration(days: dayOfYear - 2));
     return _utcToLocale(_calculateSunSet(date,
         longitude: longitude, latitude: latitude, altitude: altitude));
   }
 
   /// End DateTime
   DateTime get endDateTime {
-    final nawruz = DateTime.utc(year + 1843, 3, getDayOfNawRuz(year));
-    final date = nawruz.add(Duration(days: dayOfYear - 1));
+    final date = nawRuzDate.add(Duration(days: dayOfYear - 1));
     return _utcToLocale(_calculateSunSet(date,
         longitude: longitude, latitude: latitude, altitude: altitude));
   }
@@ -220,7 +222,7 @@ class BadiDate {
     final isAfterSunset = gregorianDate.isAfter(_calculateSunSet(gregorianDate,
         longitude: longitude, latitude: latitude, altitude: altitude));
     final date = isAfterSunset ? dateTime.add(Duration(days: 1)) : dateTime;
-    final badiYear = date.year - 1843;
+    final badiYear = date.year - YEAR_ZERO_IN_GREGORIAN;
     final isBeforeNawRuz =
         date.isBefore(DateTime.utc(date.year, 3, getDayOfNawRuz(badiYear)));
     if (!isBeforeNawRuz) {

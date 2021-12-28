@@ -236,6 +236,7 @@ void main() {
     test('leap day', () {
       var date = DateTime(2020, 2, 29);
       var badiDate = BadiDate.fromDate(date);
+      expect(badiDate.year, 176);
       expect(badiDate.isAyyamIHa, true);
       expect(badiDate.isPeriodOfFast, false);
       expect(badiDate.day, 4);

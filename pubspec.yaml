@@ -4,7 +4,7 @@ version: 1.0.2
 homepage: https://github.com/Soroosh
 
 environment:
-  sdk: ">=2.15.1 <3.0.0"
+  sdk: ">=2.13.3 <3.0.0"
 
 dependencies:
   dart_suncalc: ^0.2.1
