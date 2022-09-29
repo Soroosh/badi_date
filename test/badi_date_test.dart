@@ -327,13 +327,35 @@ void main() {
           equals(expected));
     });
 
-    test("handles sunset on next gregorian day", () {
+    test("handles sunset on next Gregorian day", () {
       final expected = DateTime.utc(2021, 6, 23, 22, 18);
       expect(
           BadiDate(day: 1, month: 6, year: 178, longitude: 8.0, latitude: 64.6)
               .endDateTime
               .toUtc(),
           equals(expected));
+    });
+
+    test("handles dates in far west", () {
+      final badiDate =
+          BadiDate(day: 2, month: 11, year: 179, longitude: -86, latitude: 12);
+      BadiDate date = badiDate.nextHolyDate;
+      expect(date.holyDay, equals(BahaiHolyDayEnum.BIRTH_OF_THE_BAB));
+      expect(
+          date.endDateTime.toUtc(), equals(DateTime.utc(2022, 10, 26, 23, 21)));
+      expect(date.startDateTime.toUtc(),
+          equals(DateTime.utc(2022, 10, 25, 23, 22)));
+    });
+
+    test("handles dates in far east", () {
+      final badiDate =
+          BadiDate(day: 2, month: 11, year: 179, longitude: 179, latitude: -12);
+      BadiDate date = badiDate.nextHolyDate;
+      expect(date.holyDay, equals(BahaiHolyDayEnum.BIRTH_OF_THE_BAB));
+      expect(
+          date.endDateTime.toUtc(), equals(DateTime.utc(2022, 10, 26, 6, 3)));
+      expect(
+          date.startDateTime.toUtc(), equals(DateTime.utc(2022, 10, 25, 6, 3)));
     });
   });
 }

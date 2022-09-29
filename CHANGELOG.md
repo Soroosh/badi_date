@@ -1,3 +1,6 @@
+## 1.0.3
+
+* Fix issue when coordinates are set leading to off by one day dates.
 ## 1.0.2
 
 * Update dart and dependency version.
