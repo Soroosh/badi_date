@@ -140,6 +140,16 @@ class BadiDate {
     }
     final sunCalcTimes = SunCalc.getTimes(date,
         lat: latitude, lng: longitude, height: altitude ?? 0.0);
+    // The sunset of places far west might have the sunset calculated
+    // for the day before. In that case we add a day and calculate again.
+    if (sunCalcTimes.sunset?.day == date.day - 1) {
+      final sunCalcWithAdjustment = SunCalc.getTimes(
+          date.add(Duration(days: 1)),
+          lat: latitude,
+          lng: longitude,
+          height: altitude ?? 0.0);
+      return sunCalcWithAdjustment.sunset ?? fallback;
+    }
     return sunCalcTimes.sunset ?? fallback;
   }
 

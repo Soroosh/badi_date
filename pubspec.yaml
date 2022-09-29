@@ -1,6 +1,6 @@
 name: badi_date
 description: A Baha'i Calendar (Badi Calendar) library to convert dates from and to Georgian Dates.
-version: 1.0.2
+version: 1.0.3
 homepage: https://github.com/Soroosh
 
 environment:
