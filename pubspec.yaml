@@ -1,16 +1,16 @@
 name: badi_date
 description: A Baha'i Calendar (Badi Calendar) library to convert dates from and to Georgian Dates.
-version: 1.0.3
+version: 1.0.4
 homepage: https://github.com/Soroosh
 
 environment:
-  sdk: ">=2.13.3 <3.0.0"
+  sdk: ">=2.13.3 <4.0.0"
 
 dependencies:
   dart_suncalc: ^0.2.1
 
 dev_dependencies:
-  lints: ^1.0.1
+  lints: ^3.0.0
   test: ^1.20.1
 
 # For information on the generic Dart part of this file, see the
