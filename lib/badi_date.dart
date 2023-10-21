@@ -75,7 +75,7 @@ class BadiDate {
 
   /// Vahid = 19 years
   int get vahid {
-    return (year / 19).floor() + 1;
+    return ((year - yearInVahid) / 19).floor() + 1;
   }
 
   /// Kull'i'shay = 19 Vahids = 361 years

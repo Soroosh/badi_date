@@ -259,9 +259,42 @@ void main() {
       expect(badiDate.isPeriodOfFast, true);
       expect(badiDate.day, 1);
     });
+
+    for (final tc in <_VahidTestCase>[
+      _VahidTestCase(
+        year: 2013,
+        expectedVahid: 9,
+        expectedYearInVahid: 18,
+      ),
+      _VahidTestCase(
+        year: 2014,
+        expectedVahid: 9,
+        expectedYearInVahid: 19,
+      ),
+      _VahidTestCase(
+        year: 2015,
+        expectedVahid: 10,
+        expectedYearInVahid: 1,
+      ),
+    ]) {
+      test('vahid for year ${tc.year}', () {
+        var date = DateTime(tc.year, 10, 21, 12);
+        var badiDate = BadiDate.fromDate(date);
+        expect(badiDate.vahid, tc.expectedVahid);
+        expect(badiDate.yearInVahid, tc.expectedYearInVahid);
+      });
+    }
+
+    test('kull i shay', () {
+      var date = DateTime(2023, 10, 21, 12);
+      var badiDate = BadiDate.fromDate(date);
+      expect(badiDate.kullIShay, 1);
+      expect(badiDate.vahid, 10);
+      expect(badiDate.yearInVahid, 9);
+    });
   });
 
-  group("sunset calculation", () {
+  group('sunset calculation', () {
     test("handles pols and nonsense values", () {
       final expected = DateTime(2021, 1, 17, 18);
       expect(BadiDate(day: 1, month: 17, year: 177).startDateTime,
@@ -358,4 +391,15 @@ void main() {
           date.startDateTime.toUtc(), equals(DateTime.utc(2022, 10, 25, 6, 3)));
     });
   });
+}
+
+class _VahidTestCase {
+  _VahidTestCase({
+    required this.year,
+    required this.expectedVahid,
+    required this.expectedYearInVahid,
+  });
+  final int year;
+  final int expectedVahid;
+  final int expectedYearInVahid;
 }
